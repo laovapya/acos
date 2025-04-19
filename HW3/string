@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <regex.h>
+ 
+int main(int argc, char* argv[]) {
+ 
+    regex_t regex;
+    int ret = regcomp(&regex, argv[1], REG_EXTENDED);
+ 
+ 
+    char* text = argv[2];
+    size_t resultSize = 1000;
+    char* result = (char*)malloc(resultSize);
+    result[0] = '\0';
+ 
+ 
+    regmatch_t match; 
+ 
+    size_t text_len = strlen(text);
+    size_t lenResult = 0;  
+ 
+    while (1) {
+ 
+        ret = regexec(&regex, text, 1, &match, 0);
+        if (ret) 
+            break;  
+ 
+ 
+        size_t lenBefore = match.rm_so;
+        if (lenResult + lenBefore + strlen(argv[3]) + 1 > resultSize) {
+            resultSize *= 2; 
+            result = (char*)realloc(result, resultSize);
+        }
+ 
+ 
+        strncat(result, text, lenBefore);
+        lenResult += lenBefore;
+ 
+ 
+        strcat(result, argv[3]);
+        lenResult += strlen(argv[3]);
+ 
+        text += match.rm_eo;
+    }
+ 
+ 
+    if (lenResult + strlen(text) + 1 > resultSize) 
+        result = (char*)realloc(result, lenResult + strlen(text) + 1);
+ 
+ 
+    strcat(result, text);
+ 
+ 
+    printf("result: %s\n", result);
+ 
+ 
+    free(result);
+    regfree(&regex);
+ 
+    return 0;
+}
